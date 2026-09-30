@@ -30,7 +30,7 @@ export default async function ContactPage({
   const baseUrlInput = (process.env.BASE_URL ?? "")
     .trim()
     .replace(/^['"]+|['"]+$/g, "");
-  const baseUrl = baseUrlInput || "https://giftstiktok.xyz";
+  const baseUrl = baseUrlInput || "https://brutto-netto-rechner.com.de";
   const normalizedBaseUrl =
     baseUrl.startsWith("http://") || baseUrl.startsWith("https://")
       ? baseUrl

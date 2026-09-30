@@ -6,4 +6,4 @@ compatibility_flags = ["nodejs_compat"]
 assets = { directory = ".open-next/assets", binding = "ASSETS" }
 
 [vars]
-BASE_URL = "https://giftstiktok.xyz"
+BASE_URL = "https://brutto-netto-rechner.com.de"

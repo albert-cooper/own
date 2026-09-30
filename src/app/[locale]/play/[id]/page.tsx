@@ -1,6 +1,6 @@
  
 
-export const runtime = "edge";
+
 
 import { Locale } from "@/i18n/routing";
 

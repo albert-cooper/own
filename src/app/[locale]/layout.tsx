@@ -7,7 +7,7 @@ import { DarkMode } from "@chakra-ui/react";
 import Script from "next/script";
 import dynamic from "next/dynamic";
 
-export const runtime = "edge";
+
 
 const ElClick = dynamic(() => import("@/components/el-click/index"), { ssr: false })
 // const CookieConsent = dynamic(() => import("@/components/cookie-consent"), { ssr: false })

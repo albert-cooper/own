@@ -1,3 +1,4 @@
+import { getSiteConfig } from "@/config/site";
 
 
 import { getCategories } from "@/actions";
@@ -22,14 +23,7 @@ import Footer from "@/components/footer";
 export default async function TermsOfServicePage({
   params: { locale },
 }: Props) {
-  const baseUrlInput = (process.env.BASE_URL ?? "")
-    .trim()
-    .replace(/^['"]+|['"]+$/g, "");
-  const baseUrl = baseUrlInput || "https://brutto-netto-rechner.com.de";
-  const normalizedBaseUrl =
-    baseUrl.startsWith("http://") || baseUrl.startsWith("https://")
-      ? baseUrl
-      : `https://${baseUrl}`;
+  const { url: normalizedBaseUrl } = getSiteConfig();
   const { hostname } = new URL(normalizedBaseUrl);
   const siteName = hostname.at(0)?.toUpperCase() + hostname.slice(1);
   

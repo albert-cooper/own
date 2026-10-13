@@ -4,10 +4,10 @@ export interface GameRecord {
   gameUrl: string;
   description: string;
   categoryId: number;
-  slug: string;
+  slug?: string;
   instructions: string;
-  id: number;
-  likes: number;
+  id: string | number;
+  likes?: number;
 }
 
 export interface CategoryRecord {

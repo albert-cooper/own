@@ -5,7 +5,7 @@
 import { Locale } from "@/i18n/routing";
 
 import { getGame } from "@/actions";
-import RedirectPlay from "@/components/redriect-play";
+import RedirectPlay from "@/components/game-redirect";
 
 interface Props {
   params: {

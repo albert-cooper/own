@@ -12,6 +12,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default,
+    messages: (await (locale === "ja-JP" ? import("../../messages/ja-JP.json") : locale === "fr-FR" ? import("../../messages/fr-FR.json") : import("../../messages/en-US.json"))).default,
   };
 });

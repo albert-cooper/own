@@ -1,3 +1,4 @@
+import { getSiteConfig } from "@/config/site";
  
 
 
@@ -20,7 +21,7 @@ import Info from "@/components/info";
 import { getTranslations } from "next-intl/server";
 import GameItem from "@/components/game-item";
 import { FaChevronRight } from "react-icons/fa6";
-const ElTemplate = dynamic(() => import("@/components/el-temlplate"), { ssr: false })
+const AdPair = dynamic(() => import("@/components/ads/ad-pair"), { ssr: false });
 interface Props {
   params: {
     locale: Locale;
@@ -32,14 +33,7 @@ export default async function Page({
   params: { locale },
   searchParams,
 }: Props) {
-  const baseUrlInput = (process.env.BASE_URL ?? "")
-    .trim()
-    .replace(/^['"]+|['"]+$/g, "");
-  const baseUrl = baseUrlInput || "https://brutto-netto-rechner.com.de";
-  const normalizedBaseUrl =
-    baseUrl.startsWith("http://") || baseUrl.startsWith("https://")
-      ? baseUrl
-      : `https://${baseUrl}`;
+  const { url: normalizedBaseUrl } = getSiteConfig();
   const { hostname } = new URL(normalizedBaseUrl);
   const allGames = await getGames(locale);
   const categories = await getCategories(locale);
@@ -57,16 +51,8 @@ export default async function Page({
         px={{ base: 3, md: 4, lg: 6 }}
         py={{ base: 4, md: 6 }}
       >
-        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
-          <ElTemplate
-            divId="div-gpt-ad-1782614717055-0"
-            adUnitPath="/23358451472/.22"
-            sizes={[[320, 100], [320, 50]]}
-            minWidth={320}
-            minHeight={100}
-            style={{ marginBottom: '8px' }}
-          />
-          {adInsertedGame && (
+        <AdPair>
+{adInsertedGame && (
             <Box w={{ base: "320px", md: "100%" }} maxW="728px" mb="8px">
               <GameItem
                 data={adInsertedGame}
@@ -75,14 +61,7 @@ export default async function Page({
               />
             </Box>
           )}
-          <ElTemplate
-            divId="div-gpt-ad-1782614717055-1"
-            adUnitPath="/23358451472/.22"
-            sizes={[[320, 50], [320, 100]]}
-            minWidth={320}
-            minHeight={50}
-          />
-        </Box>
+                  </AdPair>
         <VStack alignItems="stretch" gap={{ base: 8, md: 12 }} mt={6}>
           <Box>
             <Flex

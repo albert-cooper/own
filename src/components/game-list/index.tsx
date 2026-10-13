@@ -21,7 +21,7 @@ export default function GameList({ data, locale, channel, spanIndex }: Props) {
       {data?.map((game, index) => {
         const span = index === spanIndex ? 2 : 1;
         return (
-          <GridItem key={index} rowSpan={span} colSpan={span}>
+          <GridItem key={game.id} rowSpan={span} colSpan={span}>
             <GameItem data={game} locale={locale} channel={channel} />
           </GridItem>
         );

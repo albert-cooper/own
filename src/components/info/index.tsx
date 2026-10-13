@@ -1,3 +1,4 @@
+import { getSiteConfig } from "@/config/site";
 import { Locale } from "@/i18n/routing";
 import {
   Box,
@@ -12,14 +13,7 @@ import { getTranslations } from "next-intl/server";
 
 export default async function Info({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "Info" });
-  const baseUrlInput = (process.env.BASE_URL ?? "")
-    .trim()
-    .replace(/^['"]+|['"]+$/g, "");
-  const baseUrl = baseUrlInput || "https://brutto-netto-rechner.com.de";
-  const normalizedBaseUrl =
-    baseUrl.startsWith("http://") || baseUrl.startsWith("https://")
-      ? baseUrl
-      : `https://${baseUrl}`;
+  const { url: normalizedBaseUrl } = getSiteConfig();
 
   const generateText = () => {
     const { hostname } = new URL(normalizedBaseUrl);

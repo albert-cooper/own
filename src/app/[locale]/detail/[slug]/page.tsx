@@ -1,3 +1,4 @@
+import { getSiteConfig } from "@/config/site";
  
 
 
@@ -26,7 +27,7 @@ import {
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 import { getTargetHref, randomGames} from "@/utils";
-const ElTemplate = dynamic(() => import("@/components/el-temlplate"), { ssr: false })
+const AdPair = dynamic(() => import("@/components/ads/ad-pair"), { ssr: false });
 interface Props {
   params: {
     locale: Locale;
@@ -44,14 +45,7 @@ export default async function Page({
   params: { locale, slug },
   searchParams,
 }: Props) {
-  const baseUrlInput = (process.env.BASE_URL ?? "")
-    .trim()
-    .replace(/^['"]+|['"]+$/g, "");
-  const baseUrl = baseUrlInput || "https://brutto-netto-rechner.com.de";
-  const normalizedBaseUrl =
-    baseUrl.startsWith("http://") || baseUrl.startsWith("https://")
-      ? baseUrl
-      : `https://${baseUrl}`;
+  const { url: normalizedBaseUrl } = getSiteConfig();
   const { hostname } = new URL(normalizedBaseUrl);
   const categories = await getCategories(locale);
   const allGames = await getGames(locale);
@@ -64,7 +58,7 @@ export default async function Page({
   const category = categories.find((item) => item.id === game.categoryId);
 
   const categoryByGames = allGames.filter(
-    (item) => item.categoryId === category?.id && item.slug !== slug
+    (item) => item.categoryId === category?.id && String(item.id) !== slug
   );
   const typeGames = randomGames(categoryByGames.length, 18).map((item) => categoryByGames[item]);
 
@@ -75,23 +69,8 @@ export default async function Page({
     <Box bg="gray.900" minH="100vh">
       <Header hostname={hostname} categories={categories} />
       <Container maxWidth="container.xl" px={{ base: 3, md: 4, lg: 6 }} pt={{ base: 4, md: 6 }}>
-                <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center">
-          <ElTemplate
-            divId="div-gpt-ad-1782614717055-0"
-            adUnitPath="/23358451472/.22"
-            sizes={[[320, 100], [320, 50]]}
-            minWidth={320}
-            minHeight={100}
-            style={{ marginBottom: '8px' }}
-          />
-          <ElTemplate
-            divId="div-gpt-ad-1782614717055-1"
-            adUnitPath="/23358451472/.22"
-            sizes={[[320, 50], [320, 100]]}
-            minWidth={320}
-            minHeight={50}
-          />
-        </Box>
+                <AdPair>
+        </AdPair>
       </Container>
       <Container maxWidth="container.xl" px={{ base: 3, md: 4, lg: 6 }} py={{ base: 4, md: 6 }}>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={{ base: 4, md: 6, lg: 10 }}>

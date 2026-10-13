@@ -1,39 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Game catalog
 
-## Getting Started
+Next.js 14 / React 18 / Chakra UI game catalog, deployed to Cloudflare Workers with OpenNext.
 
-First, run the development server:
+## Local development
 
-```bash
+Use Node.js 20.x to reproduce the existing deployment environment.
+
+```sh
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit http://localhost:3000. Keep private configuration out of Git.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks and deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sh
+npm test
+npm run build:worker
+npx wrangler deploy
+```
 
-## Learn More
+`build:pages` remains a compatibility alias for the same OpenNext build so existing Cloudflare settings keep working. It does not build for Pages. Workers Builds may continue using `npm run build:pages` and `npx wrangler deploy`. Keep `wrangler.toml`'s `name` aligned with the existing Worker. `BASE_URL` controls site text and URLs; it does not bind a custom domain.
 
-To learn more about Next.js, take a look at the following resources:
+## Code map
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `src/app/`: route pages and layouts; page content stays here.
+- `src/config/site.ts`: domain normalization and default website identity.
+- `src/config/advertising.ts`: shared ad-unit path, container IDs, estimated conversion value and timing.
+- `src/services/catalog.ts`: game/category data access, locale dataset fallback and missing-record handling.
+- `src/services/normalize-game.ts`: maps legacy `thumb` and `category` fields to the UI data model.
+- `src/services/analytics.ts`: independent Meta/TikTok delivery guards and per-interaction deduplication.
+- `src/components/ads/`: reusable GPT slot and two-slot page layout.
+- `src/components/analytics/pixel-scripts.tsx`: Pixel initialization scripts, including existing IDs.
+- `src/hooks/useAdClickTracking.ts`: iframe interaction lifecycle, timers and event cleanup.
+- `src/utils/`: URL query merging, localization, non-mutating collection helpers and Meta Purchase helper.
+- `data/`, `messages/`, `public/`: original content, translations and assets.
+- `tests/`: regression checks using mocked browser APIs; tests never send live Pixel events.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The misspelled legacy component paths and `src/actions.ts` remain compatibility re-exports. New code should import the descriptive modules directly. `update_page_ads.js` now points to the shared ad components instead of rewriting page source by string replacement. `t.js` is a legacy data-generation utility; it is not run during builds and its source categories differ from the live JSON data. Do not run it as part of deployment.
 
-## Deploy on Vercel
+## Tracking behavior
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Both providers retain the `Purchase` event and configured 0.2 USD value. This is an estimated click-conversion value, not measured advertising revenue. Focus/visibility/unload signals are heuristics, not confirmation of an actual ad click. Only iframes within known ad containers qualify. Providers are deduplicated separately for an interaction, and missing/blocked SDKs do not throw into the UI. Timers and listeners are cleaned up when the tracker unmounts.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pixel IDs are intentionally preserved, including the existing `Meta-Pixel-ID` initialization placeholder and the different numeric noscript ID. Supply the intended production IDs before expecting live events; this refactor does not choose or replace them. IDs shipped to browsers are public configuration, not secrets.
 
+English and Japanese have catalog datasets. Other configured locale URLs fall back to the English catalog. French retains its existing translations; locales without translation files use English messages.
 
-[Sticker.ly](https://sticker.ly/) é uma plataforma criativa inovadora baseada em computação de borda e algoritmos de redes neurais, que protege os direitos dos criadores através da tecnologia blockchain e possibilita a monetização de ativos digitais por meio de contratos inteligentes. <br/></br/>No núcleo da plataforma, tecnologias avançadas de IA generativa, algoritmos de visão computacional e processamento de linguagem natural (PLN) estão integrados para expandir as possibilidades de expressão criativa. Os usuários podem criar facilmente adesivos personalizados e avatares virtuais utilizando processamento de alta velocidade com chips de IA. A arquitetura de nuvem híbrida e tecnologia de microsserviços permitem integração perfeita com plataformas como TikTok e Instagram. <br/><br/>Em termos de segurança, a plataforma adota arquitetura Zero Trust e aprendizado federado, implementando criptografia ponta a ponta. Os usuários podem desfrutar de atividades sociais anônimas enquanto seus dados pessoais são protegidos em nível empresarial. Este modelo social descentralizado baseado em blockchain atende perfeitamente às necessidades de soberania de dados dos usuários na era Web 3.0. <br/><br/>Para empresas, oferece um sistema de análise de marketing baseado em AIoT (fusão de IA e IoT). Combinando tecnologia de data lake e análise de Business Intelligence (BI), proporciona soluções abrangentes de marketing digital através de algoritmos precisos de persona. As empresas podem desenvolver marketing no metaverso utilizando tecnologias AR/VR para branding efetivo junto à Geração Z. <br/><br/>Na onda da economia digital, o [Sticker.ly](https://sticker.ly/) integra tecnologia NFT e conceitos de gêmeos digitais para promover a tokenização de ativos criativos. Os usuários podem realizar valor criativo através de finanças descentralizadas (DeFi). Além disso, o motor de recomendação baseado em IA e tecnologia de grafos de conhecimento conecta eficientemente criadores e marcas, construindo uma economia criativa digital. <br/><br/>Como plataforma de criação inteligente de próxima geração, o [Sticker.ly](https://sticker.ly/) integra tecnologias de ponta como computação óptica e neuromórfica, fornecendo uma poderosa infraestrutura computacional para criação de conteúdo. No contexto da Indústria 4.0 e iniciativas de cidades inteligentes, a plataforma serve como uma ponte crucial entre os mundos digital e físico, atraindo atenção contínua dos setores de capital de risco e fintech. <br/><br/>Esta plataforma criativa, que reúne tecnologias de ponta, oferece recursos de criação com IA de forma acessível, proporcionando uma experiência social digital segura, eficiente e criativa. Do jovem usuário que busca expressão individual à empresa que visa transformação digital, o [Sticker.ly](https://sticker.ly/) oferece soluções inovadoras orientadas para o futuro.
+## Refactor behavior fixes
+
+- Random sampling includes index zero, excludes out-of-bounds indices, and avoids duplicates.
+- Grouping leaves the source dataset untouched.
+- Search/channel query strings are encoded and merged without duplicate question marks.
+- Unknown catalog categories/games return not-found responses.
+- Related games exclude the current game by ID.
+- Japanese records with legacy image/category fields are normalized without editing source JSON.
+- Server-resolved site configuration is passed to the client footer.
+- Equivalent GPT sizes no longer recreate a slot just because an array reference changed.
+
+No automatic dependency upgrades, Git pushes or Cloudflare deployments are part of the refactor.

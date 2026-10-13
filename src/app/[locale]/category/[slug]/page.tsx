@@ -1,13 +1,13 @@
+import { buildPageMetadata, catalogLocale } from "@/lib/seo";
+import { availableLocalesFor } from "@/services/seo-catalog";
+import { getCategory } from "@/services/catalog";
+import GameGrid from "@/components/game-grid";
 import { getSiteConfig } from "@/config/site";
- 
-
-
 
 import { getCategories, getGames } from "@/actions";
 import { Locale } from "@/i18n/routing";
 import {
   Container,
-  SimpleGrid,
   VStack,
   Heading,
   Flex,
@@ -23,8 +23,7 @@ interface Props {
   searchParams: Record<string, string>;
 }
 
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+import PageShell from "@/components/page-shell";
 import Info from "@/components/info";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -32,6 +31,16 @@ import GameItem from "@/components/game-item";
 import { randomGames } from "@/utils";
 const AdPair = dynamic(() => import("@/components/ads/ad-pair"), { ssr: false });
 
+export async function generateMetadata({ params: { locale, slug } }: Props) {
+  const category = await getCategory(locale, slug);
+  const path = `/category/${encodeURIComponent(slug)}`;
+  const japanese = catalogLocale(locale) === "ja-JP";
+  return buildPageMetadata({ locale, path,
+    title: japanese ? `${category.name}のゲーム` : `${category.name} Games`,
+    description: japanese ? `${category.name}のブラウザゲームを探して、ゲームの紹介を読んで遊びましょう。` : `Browse ${category.name} browser games, read their introductions, and choose a game to play online.`,
+    availableLocales: await availableLocalesFor(path),
+  });
+}
 
 export default async function Page({
   params: { locale, slug },
@@ -54,24 +63,24 @@ export default async function Page({
   const categoryByGames = randomGames(_list.length, 8).map((item) => _list[item]);
 
   return (
-    <Box bg="gray.900" minH="100vh">
-      <Header categories={categories} hostname={hostname} />
+    <PageShell hostname={hostname} categories={categories}>
       <Container maxWidth="container.xl" px={{ base: 3, md: 4, lg: 6 }} py={{ base: 4, md: 6 }}>
         <AdPair>
-{categoryByGames[0] && (
+          {categoryByGames[0] && (
             <Box w={{ base: "320px", md: "100%" }} maxW="728px" mb="8px">
               <GameItem
+                headingAs="p"
                 data={categoryByGames[0]}
                 locale={locale}
                 channel={searchParams?.channel}
               />
             </Box>
           )}
-                  </AdPair>
+        </AdPair>
         <VStack alignItems="stretch" gap={{ base: 8, md: 12 }} mt={6}>
           <Box>
             <Flex alignItems="center" gap={3} mb={6}>
-              <Heading
+              <Heading as="h1"
                 fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
                 color="white"
                 textTransform="uppercase"
@@ -83,22 +92,7 @@ export default async function Page({
                 {t("Games", { category: category.name })}
               </Heading>
             </Flex>
-            <Box
-              sx={{
-                columnCount: { base: 2, sm: 3, md: 4, lg: 5, xl: 6 },
-                columnGap: { base: 3, md: 4, lg: 5 },
-              }}
-            >
-              {categoryByGames.slice(1).map((item, index) => (
-                <Box key={`${item?.id ?? "game"}-${index}`} sx={{ breakInside: "avoid", mb: { base: 3, md: 4, lg: 5 } }}>
-                  <GameItem
-                    data={item}
-                    locale={locale}
-                    channel={searchParams?.channel}
-                  />
-                </Box>
-              ))}
-            </Box>
+            <GameGrid games={categoryByGames.slice(1)} locale={locale} channel={searchParams?.channel} headingAs="h2" />
           </Box>
           <Box
             bg="gray.800"
@@ -111,7 +105,6 @@ export default async function Page({
           </Box>
         </VStack>
       </Container>
-      <Footer />
-    </Box>
+    </PageShell>
   );
 }

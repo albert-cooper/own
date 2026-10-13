@@ -129,3 +129,63 @@ test('legacy Japanese data fields normalize without changing the source', () => 
   assert.equal(game.image, '/thumb.jpg'); assert.equal(game.categoryId, 2);
   assert.equal(raw.image, undefined); assert.equal(raw.categoryId, undefined);
 });
+
+test('SEO canonicals ignore tracking parameters and use the configured site origin', () => {
+  const load = loader();
+  const { pageUrl, buildPageMetadata } = load('src/lib/seo.ts');
+  const site = load('src/config/site.ts').getSiteConfig();
+  assert.equal(pageUrl('en-US', '/detail/33349/?channel=paid&utm_source=meta#play'), `${site.url}/en-US/detail/33349`);
+  const english = buildPageMetadata({ locale: 'en-US', path: '/detail/33349', title: 'Jet Sky Polygon', description: 'Play a game.' });
+  const fallback = buildPageMetadata({ locale: 'de-DE', path: '/detail/33349', title: 'Jet Sky Polygon', description: 'Play a game.' });
+  assert.equal(fallback.alternates.canonical, english.alternates.canonical);
+  assert.equal(english.openGraph.url, english.alternates.canonical);
+  assert.equal(english.alternates.languages['de-DE'], undefined);
+  assert.equal(english.robots.index, true);
+});
+
+test('utility pages are noindex; English-only articles consolidate to English', () => {
+  const { buildPageMetadata, informationMetadata, pageUrl, documentLocale } = loader()('src/lib/seo.ts');
+  for (const path of ['/search', '/play/33349']) {
+    const metadata = buildPageMetadata({ locale: 'en-US', path, title: 'Game', description: 'Game', noindex: true });
+    assert.equal(metadata.robots.index, false);
+    assert.equal(metadata.robots.follow, true);
+    assert.equal(metadata.alternates.languages, undefined);
+  }
+  const article = informationMetadata('ja-JP', '/privacy-policy');
+  assert.equal(article.alternates.canonical, pageUrl('en-US', '/privacy-policy'));
+  assert.equal(article.alternates.languages['ja-JP'], undefined);
+  assert.equal(documentLocale('de-DE'), 'en-US');
+  assert.equal(documentLocale('ja-JP'), 'ja-JP');
+});
+
+test('sitemap alternates are reciprocal, exist in the actual catalogs, and omit utility/fallback URLs', async () => {
+  const normalize = loader()('src/services/normalize-game.ts').normalizeGame;
+  const read = (locale, name) => JSON.parse(fs.readFileSync(`data/${locale}/${name}.json`, 'utf8'));
+  const load = loader({}, {
+    react: { cache: fn => fn },
+    './catalog': {
+      getGames: async locale => read(locale, 'data').map(normalize),
+      getCategories: async locale => read(locale, 'categories'),
+    },
+  });
+  const entries = await load('src/app/sitemap.ts').default();
+  const urls = new Set(entries.map(entry => entry.url));
+  assert.equal(urls.size, entries.length);
+  assert(entries.length > 2000);
+  for (const entry of entries) {
+    const url = new URL(entry.url);
+    assert.equal(url.search, '');
+    assert.match(url.pathname, /^\/(en-US|ja-JP)(\/|$)/);
+    assert(!/\/(play|search)(\/|$)/.test(url.pathname));
+    for (const alternate of Object.values(entry.alternates?.languages || {})) {
+      assert(urls.has(alternate), `Missing alternate ${alternate}`);
+      const other = entries.find(item => item.url === alternate);
+      assert(Object.values(other.alternates.languages).includes(entry.url), `Nonreciprocal ${entry.url}`);
+    }
+  }
+  const jaIds = new Set(read('ja-JP', 'data').map(game => String(game.id)));
+  const missingJapanese = read('en-US', 'data').find(game => !jaIds.has(String(game.id)));
+  assert(missingJapanese, 'Fixture should exercise a game with no Japanese translation');
+  const metadataLocales = await load('src/services/seo-catalog.ts').availableLocalesFor(`/detail/${missingJapanese.id}`);
+  assert.deepEqual(Array.from(metadataLocales), ['en-US']);
+});

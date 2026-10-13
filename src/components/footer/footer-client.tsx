@@ -31,7 +31,7 @@ export default function FooterClient({ site }: { site: SiteConfig }) {
               © {dayjs().format("YYYY")} {hostname}. All rights reserved.
             </Text>
             
-            <Flex gap={{ base: 4, md: 6 }} flexWrap="wrap" justifyContent="center">
+            <Flex as="nav" aria-label="Site information" gap={{ base: 4, md: 6 }} flexWrap="wrap" justifyContent="center">
               <Link href={getTargetHref(locale, "/about", channel)} color="gray.400" _hover={{ color: "cyan.400" }} fontSize="sm">
                 About Us
               </Link>

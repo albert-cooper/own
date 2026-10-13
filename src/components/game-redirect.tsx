@@ -11,5 +11,10 @@ export default function RedirectPlay({ url }: { url: string }) {
     }
   }, [])
 
-  return <Box as="a" ref={ref} href={url} rel="nofollow noopener noreferrer"></Box>
+  return (
+    <Box as="main" p={6} lang="en-US">
+      <h1>Opening game</h1>
+      <Box as="a" ref={ref} href={url} rel="nofollow noopener noreferrer">Continue to game</Box>
+    </Box>
+  );
 }

@@ -26,13 +26,15 @@ export default function SearchInput() {
   };
 
   return (
-    <form onSubmit={handleSearch} style={{ width: "100%" }}>
+    <form role="search" aria-label="Search games" onSubmit={handleSearch} style={{ width: "100%" }}>
       <InputGroup size="sm" w="full" maxW={{ base: "100%", md: "240px" }}>
         <InputLeftElement pointerEvents="none">
           <FaSearch color="gray.400" size="12px" />
         </InputLeftElement>
         <Input
-          type="text"
+          type="search"
+          aria-label="Search games"
+          name="q"
           placeholder="Search games..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}

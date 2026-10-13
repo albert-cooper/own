@@ -61,3 +61,15 @@ English and Japanese have catalog datasets. Other configured locale URLs fall ba
 - Equivalent GPT sizes no longer recreate a slot just because an array reference changed.
 
 No automatic dependency upgrades, Git pushes or Cloudflare deployments are part of the refactor.
+
+
+## HTML 语义与搜索引擎设置
+
+- 内容页共用 `src/components/page-shell.tsx`，提供 header/nav/main/footer；游戏列表使用 ul/li，卡片与详情使用 article。页面主标题为 h1，栏目和详情小节为 h2，栏目中的卡片标题为 h3。
+- `src/lib/seo.ts` 统一生成标题、描述、canonical、hreflang 和分享元数据；站点来源仍由 `BASE_URL` / `src/config/site.ts` 决定。
+- 首页、分类和详情的 canonical 去掉 channel、UTM 等参数，但访问链接中的参数继续传递，广告追踪行为保持原状。
+- 只有 en-US、ja-JP 有游戏数据翻译。其他语言的游戏页 canonical 指向英文；仅有界面翻译不视作游戏内容翻译。hreflang 按实际存在的对应页面生成，不宣告缺失的译文。
+- 关于、联系、隐私、条款正文目前都是英文：正文标记 lang=en-US，各语言副本 canonical 指向英文，sitemap 仅提交英文版本。
+- 搜索页和游戏跳转页设为 noindex,follow，不加入 sitemap。robots.txt 不屏蔽这些页面或查询参数，让搜索引擎能读取页面的 canonical/noindex。
+- `/sitemap.xml` 从实际目录数据生成，`/robots.txt` 提供地图地址。新增真正的语言翻译时，需要同步维护 catalogLocales、目录加载器和元数据文案。
+- 部署后可在 Google Search Console 提交 `https://brutto-netto-rechner.com.de/sitemap.xml`。语义和 SEO 设置不替代原创内容，也不保证收录或排名。

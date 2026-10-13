@@ -52,6 +52,7 @@ export default function Header({
 
   return (
     <Box
+      as="header"
       position="sticky"
       top={0}
       w="full"
@@ -85,6 +86,8 @@ export default function Header({
             {hostname}
           </Box>
           <Flex
+            as="nav"
+            aria-label="Game categories"
             hideBelow="lg"
             gap={2}
             alignItems="center"
@@ -123,7 +126,7 @@ export default function Header({
           <Box px={1} w="full" display={{ base: "block", md: "none" }}>
             <SearchInput />
           </Box>
-          <Flex gap={1} flexWrap="wrap" justifyContent="center">
+          <Flex as="nav" aria-label="Game categories" gap={1} flexWrap="wrap" justifyContent="center">
             {categories.slice(0, 4).map((category) => (
               <Button
                 as="a"

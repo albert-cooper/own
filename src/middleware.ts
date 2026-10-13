@@ -17,5 +17,5 @@ export function middleware(request: NextRequest) {
   return response;
 }
 export const config = {
-  matcher: ["/api/:path*", "/((?!_next|static|ads).*)"],
+  matcher: ["/api/:path*", "/((?!_next|static|ads|robots\\.txt|sitemap\\.xml|favicon\\.ico).*)"],
 };

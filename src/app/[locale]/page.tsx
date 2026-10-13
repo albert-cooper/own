@@ -1,21 +1,19 @@
+import { buildPageMetadata, catalogLocale, homeCopy } from "@/lib/seo";
+import GameGrid from "@/components/game-grid";
 import { getSiteConfig } from "@/config/site";
- 
-
-
 
 import { getCategories, getGames } from "@/actions";
 import { Locale } from "@/i18n/routing";
 import {
   Container,
-  SimpleGrid,
+  Text,
   Flex,
   VStack,
   Heading,
   Box,
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+import PageShell from "@/components/page-shell";
 import { getTargetHref, randomGames } from "@/utils";
 import Info from "@/components/info";
 import { getTranslations } from "next-intl/server";
@@ -27,6 +25,10 @@ interface Props {
     locale: Locale;
   };
   searchParams: Record<string, string>;
+}
+
+export function generateMetadata({ params: { locale } }: Props) {
+  return buildPageMetadata({ locale, ...homeCopy[catalogLocale(locale)] });
 }
 
 export default async function Page({
@@ -44,32 +46,38 @@ export default async function Page({
   const adInsertedGame = randomGames(allGames.length, 1).map((item) => allGames[item])[0];
   
   return (
-    <Box bg="gray.900" minH="100vh">
-      <Header hostname={hostname} categories={categories} />
+    <PageShell hostname={hostname} categories={categories}>
       <Container
         maxWidth="container.xl"
         px={{ base: 3, md: 4, lg: 6 }}
         py={{ base: 4, md: 6 }}
       >
+        <Box as="header" mb={6} lang={catalogLocale(locale)}>
+          <Heading as="h1" color="white" fontSize={{ base: "2xl", md: "3xl" }}>
+            {homeCopy[catalogLocale(locale)].title}
+          </Heading>
+          <Text mt={2} color="gray.400">{homeCopy[catalogLocale(locale)].description}</Text>
+        </Box>
         <AdPair>
-{adInsertedGame && (
+          {adInsertedGame && (
             <Box w={{ base: "320px", md: "100%" }} maxW="728px" mb="8px">
               <GameItem
+                headingAs="p"
                 data={adInsertedGame}
                 locale={locale}
                 channel={searchParams?.channel}
               />
             </Box>
           )}
-                  </AdPair>
+        </AdPair>
         <VStack alignItems="stretch" gap={{ base: 8, md: 12 }} mt={6}>
-          <Box>
+          <Box as="section" aria-labelledby="new-games">
             <Flex
               alignItems="center"
               justifyContent="space-between"
               mb={4}
             >
-              <Heading
+              <Heading as="h2" id="new-games"
                 fontSize={{ base: "lg", md: "xl", lg: "2xl" }}
                 textTransform="uppercase"
                 color="white"
@@ -81,31 +89,16 @@ export default async function Page({
                 {t("Games", { category: t("New") })}
               </Heading>
             </Flex>
-            <Box
-              sx={{
-                columnCount: { base: 2, sm: 3, md: 4, lg: 5, xl: 6 },
-                columnGap: { base: 3, md: 4, lg: 5 },
-              }}
-            >
-              {newGames.map((item) => (
-                <Box key={item?.id} sx={{ breakInside: "avoid", mb: { base: 3, md: 4, lg: 5 } }}>
-                  <GameItem
-                    data={item}
-                    locale={locale}
-                    channel={searchParams?.channel}
-                  />
-                </Box>
-              ))}
-            </Box>
+            <GameGrid games={newGames} locale={locale} channel={searchParams?.channel} />
           </Box>
           
-          <Box>
+          <Box as="section" aria-labelledby="top-games">
             <Flex
               alignItems="center"
               justifyContent="space-between"
               mb={4}
             >
-              <Heading
+              <Heading as="h2" id="top-games"
                 fontSize={{ base: "lg", md: "xl", lg: "2xl" }}
                 textTransform="uppercase"
                 color="white"
@@ -117,22 +110,7 @@ export default async function Page({
                 {t("Games", { category: t("Top") })}
               </Heading>
             </Flex>
-            <Box
-              sx={{
-                columnCount: { base: 2, sm: 3, md: 4, lg: 5, xl: 6 },
-                columnGap: { base: 3, md: 4, lg: 5 },
-              }}
-            >
-              {topGames.map((item) => (
-                <Box key={item?.id} sx={{ breakInside: "avoid", mb: { base: 3, md: 4, lg: 5 } }}>
-                  <GameItem
-                    data={item}
-                    locale={locale}
-                    channel={searchParams?.channel}
-                  />
-                </Box>
-              ))}
-            </Box>
+            <GameGrid games={topGames} locale={locale} channel={searchParams?.channel} />
           </Box>
 
           {categories.map((category) => {
@@ -143,7 +121,7 @@ export default async function Page({
             }
 
             return (
-              <Box key={category.alias}>
+              <Box as="section" key={category.alias} aria-labelledby={`category-${category.alias}`}>
                 <Flex
                   alignItems="center"
                   justifyContent="space-between"
@@ -155,7 +133,7 @@ export default async function Page({
                     alignItems="center"
                     gap={4}
                   >
-                    <Heading
+                    <Heading as="h2" id={`category-${category.alias}`}
                       fontSize={{ base: "lg", md: "xl", lg: "2xl" }}
                       color="white"
                       textTransform="uppercase"
@@ -185,22 +163,7 @@ export default async function Page({
                     </Flex>
                   </Flex>
                 </Flex>
-                <Box
-                  sx={{
-                    columnCount: { base: 2, sm: 3, md: 4, lg: 5, xl: 6 },
-                    columnGap: { base: 3, md: 4, lg: 5 },
-                  }}
-                >
-                  {gamesList.map((item) => (
-                    <Box key={item?.id} sx={{ breakInside: "avoid", mb: { base: 3, md: 4, lg: 5 } }}>
-                      <GameItem
-                        data={item}
-                        locale={locale}
-                        channel={searchParams?.channel}
-                      />
-                    </Box>
-                  ))}
-                </Box>
+                <GameGrid games={gamesList} locale={locale} channel={searchParams?.channel} />
               </Box>
             );
           })}
@@ -216,7 +179,6 @@ export default async function Page({
           </Box>
         </VStack>
       </Container>
-      <Footer />
-    </Box>
+    </PageShell>
   );
 }

@@ -1,16 +1,15 @@
+import { buildPageMetadata, catalogLocale } from "@/lib/seo";
+import { availableLocalesFor } from "@/services/seo-catalog";
+import { getGame } from "@/services/catalog";
+import GameGrid from "@/components/game-grid";
 import { getSiteConfig } from "@/config/site";
- 
-
-
 
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { FaCirclePlay } from "react-icons/fa6";
 import { getCategories, getGames } from "@/actions";
-import Footer from "@/components/footer";
-import GameItem from "@/components/game-item";
-import Header from "@/components/header";
+import PageShell from "@/components/page-shell";
 import Info from "@/components/info";
 import StarRating from "@/components/star-rating";
 import { Locale } from "@/i18n/routing";
@@ -41,6 +40,15 @@ const getLikes = () => {
   const number = Math.random() * (max - min) + min;
   return parseFloat(number.toFixed(1)); // 保留一位小数
 };
+export async function generateMetadata({ params: { locale, slug } }: Props) {
+  const game = await getGame(locale, slug);
+  const path = `/detail/${encodeURIComponent(String(game.id))}`;
+  return buildPageMetadata({ locale, path, title: game.name,
+    description: game.description || game.name,
+    availableLocales: await availableLocalesFor(path),
+  });
+}
+
 export default async function Page({
   params: { locale, slug },
   searchParams,
@@ -63,17 +71,15 @@ export default async function Page({
   const typeGames = randomGames(categoryByGames.length, 18).map((item) => categoryByGames[item]);
 
   if (!category) {
-    return null;
+    return notFound();
   }
   return (
-    <Box bg="gray.900" minH="100vh">
-      <Header hostname={hostname} categories={categories} />
+    <PageShell hostname={hostname} categories={categories}>
       <Container maxWidth="container.xl" px={{ base: 3, md: 4, lg: 6 }} pt={{ base: 4, md: 6 }}>
-                <AdPair>
-        </AdPair>
+        <AdPair />
       </Container>
       <Container maxWidth="container.xl" px={{ base: 3, md: 4, lg: 6 }} py={{ base: 4, md: 6 }}>
-        <SimpleGrid columns={{ base: 1, md: 2 }} gap={{ base: 4, md: 6, lg: 10 }}>
+        <SimpleGrid as="article" aria-labelledby="game-title" lang={catalogLocale(locale)} columns={{ base: 1, md: 2 }} gap={{ base: 4, md: 6, lg: 10 }}>
           <Box>
             <AspectRatio
               ratio={{ base: 16 / 9, md: 1 }}
@@ -102,7 +108,7 @@ export default async function Page({
             p={{ base: 4, md: 6 }}
             boxShadow="2xl"
           >
-            <Heading as="h2" size={{ base: "md", md: "lg" }} lineHeight={1.25} color="white">
+            <Heading as="h1" id="game-title" size={{ base: "md", md: "lg" }} lineHeight={1.25} color="white">
               {game.name}
             </Heading>
             <Box pt={3}>
@@ -132,7 +138,7 @@ export default async function Page({
                 {t("Play")}
               </Button>
             </Box>
-            <Heading as="h3" size="md" pt={{ base: 6, md: 7 }} pb={3} color="white">
+            <Heading as="h2" size="md" pt={{ base: 6, md: 7 }} pb={3} color="white">
               {t("Introduction")}
             </Heading>
             <Text color="gray.300" lineHeight="tall">{game.description}</Text>
@@ -140,28 +146,11 @@ export default async function Page({
         </SimpleGrid>
       </Container>
       <Container maxWidth="container.xl" px={{ base: 3, md: 4, lg: 6 }} pb={{ base: 4, md: 6 }}>
-        <Box mb={6}>
-          <Heading as="h3" size="lg" mb={4} color="white" borderLeft="4px solid" borderColor="cyan.400" pl={3}>
+        <Box as="section" aria-labelledby="similar-games" mb={6}>
+          <Heading as="h2" id="similar-games" size="lg" mb={4} color="white" borderLeft="4px solid" borderColor="cyan.400" pl={3}>
             {t("SimilarGames")}
           </Heading>
-          <Box
-            sx={{
-              columnCount: { base: 2, sm: 3, md: 4, lg: 5, xl: 6 },
-              columnGap: { base: 3, md: 4, lg: 5 },
-            }}
-          >
-            {typeGames.map((item) => {
-              return (
-                <Box key={item?.id} sx={{ breakInside: "avoid", mb: { base: 3, md: 4, lg: 5 } }}>
-                  <GameItem
-                    data={item}
-                    locale={locale}
-                    channel={searchParams?.channel}
-                  />
-                </Box>
-              );
-            })}
-          </Box>
+          <GameGrid games={typeGames} locale={locale} channel={searchParams?.channel} />
         </Box>
         <Box
           bg="gray.800"
@@ -173,7 +162,6 @@ export default async function Page({
           <Info locale={locale} />
         </Box>
       </Container>
-      <Footer />
-    </Box>
+    </PageShell>
   );
 }

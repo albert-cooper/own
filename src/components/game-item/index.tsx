@@ -1,3 +1,4 @@
+import { catalogLocale } from "@/lib/seo";
 import { Locale } from "@/i18n/routing";
 import { GameRecord } from "@/services/data";
 import { getTargetHref } from "@/utils";
@@ -8,16 +9,20 @@ const GameItem = ({
   data,
   locale,
   channel,
+  headingAs = "h3",
 }: {
   data: GameRecord;
   locale: Locale;
   channel?: string;
+  headingAs?: "h2" | "h3" | "p";
 }) => {
   if(!data){
     return null;
   }
   return (
     <LinkBox
+      as="article"
+      lang={catalogLocale(locale)}
       bg="gray.800"
       border="1px solid"
       borderColor="gray.700"
@@ -39,7 +44,7 @@ const GameItem = ({
       <Box px={3} py={2.5}>
         <LinkOverlay href={getTargetHref(locale, `/detail/${data.id}`, channel)}>
           <Heading
-            as="h5"
+            as={headingAs}
             size="sm"
             lineHeight={1.4}
             color="gray.100"

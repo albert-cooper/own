@@ -1,5 +1,5 @@
+import { informationMetadata } from "@/lib/seo";
 import { getSiteConfig } from "@/config/site";
-
 
 import { getCategories } from "@/actions";
 import { Locale } from "@/i18n/routing";
@@ -22,8 +22,11 @@ interface Props {
   };
 }
 
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+import PageShell from "@/components/page-shell";
+
+export function generateMetadata({ params: { locale } }: Props) {
+  return informationMetadata(locale, "/contact");
+}
 
 export default async function ContactPage({
   params: { locale },
@@ -34,12 +37,11 @@ export default async function ContactPage({
   const categories = await getCategories(locale);
 
   return (
-    <Box bg="gray.900" minH="100vh" color="gray.300">
-      <Header categories={categories} hostname={hostname} />
+    <PageShell hostname={hostname} categories={categories}>
       <Container maxWidth="container.md" px={{ base: 4, md: 6 }} py={{ base: 8, md: 12 }}>
-        <Box bg="gray.800" p={{ base: 6, md: 10 }} rounded="2xl" border="1px solid" borderColor="gray.700" boxShadow="xl">
+        <Box as="article" lang="en-US" aria-labelledby="page-title" bg="gray.800" p={{ base: 6, md: 10 }} rounded="2xl" border="1px solid" borderColor="gray.700" boxShadow="xl">
           <VStack align="stretch" spacing={6} gap={6}>
-            <Heading as="h1" size="2xl" color="white" mb={2}>
+            <Heading id="page-title" as="h1" size="2xl" color="white" mb={2}>
               Contact Us
             </Heading>
             
@@ -71,7 +73,7 @@ export default async function ContactPage({
             </Box>
 
             <Box mt={6} pt={6} borderTop="1px solid" borderColor="gray.700">
-              <Heading as="h3" size="md" color="white" mb={4}>
+              <Heading as="h2" size="md" color="white" mb={4}>
                 Other Ways to Reach Us
               </Heading>
               <Text fontSize="md">
@@ -81,7 +83,6 @@ export default async function ContactPage({
           </VStack>
         </Box>
       </Container>
-      <Footer />
-    </Box>
+    </PageShell>
   );
 }
